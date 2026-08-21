@@ -5,13 +5,15 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import io.github.cdimascio.dotenv.Dotenv;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Scanner;
 
 public class Main {
 
-    private static final int PORT = 22;
     private static final String CARPETA_LOCAL = "data";
 
     public static void main(String[] args) {
@@ -32,6 +34,7 @@ public class Main {
             String host = dotenv.get("HOST");
             String user = dotenv.get("USER");
             String archivoRemoto = dotenv.get("ARCHIVO_REMOTO");
+            int port = Integer.parseInt(dotenv.get("PORT"));
 
             // Crear carpeta local
             Path carpeta = Path.of(CARPETA_LOCAL);
@@ -44,7 +47,7 @@ public class Main {
             JSch jsch = new JSch();
 
             // Crear sesión SSH
-            session = jsch.getSession(user, host, PORT);
+            session = jsch.getSession(user, host, port);
 
             // Pedir contraseña
             System.out.print("Ingrese la contraseña de Ubuntu: ");
@@ -92,6 +95,23 @@ public class Main {
                     Path.of(archivoLocal)
                             .toAbsolutePath()
             );
+
+            System.out.println();
+            System.out.println("======================================");
+            System.out.println("       DATOS DEL ARCHIVO CSV");
+            System.out.println("======================================");
+
+            try (BufferedReader reader = Files.newBufferedReader(Path.of(archivoLocal))) {
+
+                String linea;
+
+                while ((linea = reader.readLine()) != null) {
+                    System.out.println(linea);
+                }
+
+            } catch (IOException e) {
+                System.out.println("Error al leer el archivo CSV: " + e.getMessage());
+            }
 
         } catch (Exception e) {
 
